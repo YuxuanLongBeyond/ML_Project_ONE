@@ -97,7 +97,6 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         g = np.dot(tx.T, s - y)
         H = np.dot(tx.T * ((1 - s) * s), tx)
         d = solve(H, g, D)
-#        d = np.linalg.solve(H, g)
         w -= gamma * d
     loss = compute_log_loss(y, tx, w)
     return w, loss
@@ -114,40 +113,58 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     loss = compute_log_loss(y, tx, w) - lambda_ * np.dot(w, w) / 2.0
     return w, loss
 
+def evaluate(w, tx_test, y_test):
+    y_hat = np.dot(tx_test, w)
+    
+    y_hat[y_hat > 0] = 1
+    y_hat[y_hat < 0] = -1
+    
+    accuracy = np.sum(y_test == y_hat) / len(y_test)
+    return accuracy
+    
 
 if __name__ == '__main__':
-    N = 200
+    N = 600
     D = 10
-    X = np.random.rand(N, D)
-    max_iters = 200
+    
+    max_iters = 500
     gamma = 0.001
     lambda_ = 0.001
     
-    X[0:100, :] += 1.0
     
-    y = np.concatenate((np.ones(100), -np.ones(100)), axis = 0)
+    # random simple train and test
+    X = np.random.rand(N, D)
+    X[0:(N // 2), :] += 1.0
+    tx = np.concatenate((np.ones((N,1)), X), axis = 1)
+    y = np.concatenate((np.ones(N // 2), -np.ones(N // 2)), axis = 0)
+    
+    tx_test = np.random.rand(1000, 10)
+    tx_test[0:500, :] += 1.0
+    tx_test = np.concatenate((np.ones((1000,1)), tx_test), axis = 1)
+    y_test = np.concatenate((np.ones(500), -np.ones(500)), axis = 0)
+    
     
     initial_w = np.random.rand(D + 1)
-    tx = np.concatenate((np.ones((N,1)), X), axis = 1)
+    
+    
+    w, loss = least_squares_GD(y, tx, initial_w, max_iters, gamma)
+    print(loss)
 
-    # w, loss = least_squares_SGD(y, tx, initial_w, max_iters, gamma)
+#    w, loss = least_squares_SGD(y, tx, initial_w, max_iters, gamma)
+#    print(loss)
 #
 #    w, loss = least_squares(y, tx)
 #    print(loss)
 #
-#
 #    w, loss = ridge_regression(y, tx, lambda_)
 #    print(loss)
-    
-#    w, residuals, rank, s = np.linalg.lstsq(tx, y, rcond = None)
-#    loss = compute_loss(y, tx, w, N)
-#    print(loss)
-#    inv = np.linalg.inv(np.dot(tx.T, tx))
-#    w = np.dot(inv, np.dot(tx.T, y))
-#    loss = compute_loss(y, tx, w, N)
-#    print(loss)
+#    
 #    w, loss = reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma)
 #    print(loss)
 #    
-    w, loss = logistic_regression(y, tx, initial_w, max_iters, gamma)
-    print(loss)
+#    w, loss = logistic_regression(y, tx, initial_w, max_iters, gamma)
+#    print(loss)
+    
+    
+    accuracy = evaluate(w, tx_test, y_test)
+    print(accuracy)
