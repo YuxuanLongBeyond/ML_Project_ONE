@@ -5,70 +5,21 @@ Created on Thu Mar 21 10:53:43 2019
 @author: Yuxuan Long
 """
 
-import struct
-import matplotlib.pyplot as plt
 import numpy as np
 
-def decode_idx3_ubyte(idx3_ubyte_file):
-    bin_data = open(idx3_ubyte_file, 'rb').read()
-    offset = 0
-    fmt_header = '>iiii'
-    magic, num_images, num_rows, num_cols = struct.unpack_from(fmt_header, bin_data, offset)
-    
-    image_size = num_rows * num_cols
-    offset += struct.calcsize(fmt_header)
-    fmt_image = '>' + str(image_size) + 'B'
-    images = np.empty((image_size, num_images))
-    for i in range(num_images):
-        images[:, i] = np.array(struct.unpack_from(fmt_image, bin_data, offset))
-        offset += struct.calcsize(fmt_image)
-    return images
 
-def decode_idx1_ubyte(idx1_ubyte_file):
-    bin_data = open(idx1_ubyte_file, 'rb').read()
-    offset = 0
-    fmt_header = '>ii'
-    magic, num_images = struct.unpack_from(fmt_header, bin_data, offset)
-    
-    offset += struct.calcsize(fmt_header)
-    fmt_image = '>B'
-    labels = np.empty(num_images)
-    for i in range(num_images):
-        labels[i] = struct.unpack_from(fmt_image, bin_data, offset)[0]
-        offset += struct.calcsize(fmt_image)
-    return labels
-
-def createDataFiles():
-    train_label_file = './mnist/train-labels.idx1-ubyte'
-    train_image_file = './mnist/train-images.idx3-ubyte'
-    test_label_file = './mnist/t10k-labels.idx1-ubyte'
-    test_image_file = './mnist/t10k-images.idx3-ubyte'
-    
-    train_images = decode_idx3_ubyte(train_image_file) / 255.0
-    train_labels = np.uint64(decode_idx1_ubyte(train_label_file))
-    
-    test_images = decode_idx3_ubyte(test_image_file) / 255.0
-    test_labels = np.uint64(decode_idx1_ubyte(test_label_file))
-    
-    np.save('train_images', train_images)
-    np.save('train_labels', train_labels)
-    np.save('test_images', test_images)
-    np.save('test_labels', test_labels)
-    
 def dataPreprocessing(train_images, test_images):
     # data pre-processing
     u = np.mean(train_images, axis = 1).reshape((train_images.shape[0], 1))
     return (train_images - u), (test_images - u)
 
 class SimNet:
-    def __init__(self, fan_out_list, num_layers, data_X, data_Y, test_images, 
-                 test_labels, out_dim, lr, lam, batch_size, num_epoch):
+    def __init__(self, fan_out_list, data_X, data_Y, 
+                 out_dim, lr, lam, batch_size, num_epoch):
         self.fan_out_list = fan_out_list
-        self.num_layers = num_layers
+        self.num_layers = len(fan_out_list)
         self.data_X = data_X
         self.data_Y = data_Y
-        self.test_images = test_images
-        self.test_labels = test_labels
         self.out_dim = out_dim
         self.x_dim = data_X.shape[0]
         self.N = data_X.shape[1]
@@ -77,17 +28,19 @@ class SimNet:
         self.batch_size = batch_size
         self.num_epoch = num_epoch
         
-        
         dim_list = [self.x_dim] + fan_out_list + [out_dim]
         W_list = []
         b_list = []
-        for i in range(num_layers + 1):
+        for i in range(self.num_layers + 1):
             # He initialization
             W_list.append(np.random.randn(dim_list[i], dim_list[i + 1]) / np.sqrt(dim_list[i]) / 2)
             b_list.append(np.zeros(dim_list[i + 1]))
-
+        print(len(W_list))
+        print(W_list[0].shape)
+        print(W_list[1].shape)
         self.W_list = np.array(W_list)
         self.b_list = np.array(b_list)
+        
     
     
     def ReLU(self, X):
@@ -166,7 +119,7 @@ class SimNet:
             b_grad_list = [b_grad] + b_grad_list
         return np.array(W_grad_list), np.array(b_grad_list)
 
-    def update(self):
+    def optimize(self):
         # compute final gradient and update
         # collect loss
         
@@ -183,7 +136,7 @@ class SimNet:
         
         loss_list = []
         for i in range(self.num_epoch):
-            print('Epoch ' + str(i) + '\n')
+#            print('Epoch ' + str(i) + '\n')
             index = self.sample()
             for j in range(0, self.N, self.batch_size): 
                 if (j + self.batch_size) <= self.N:
@@ -231,33 +184,7 @@ class SimNet:
         new_grad = new_m / (1 - beta1_t) / ((new_v / (1 - beta2_t)) ** 0.5 + epsilon)
         return new_m, new_v, new_grad
     
-    def test(self):
+    def test(self, test_images, test_labels):
         # test the model
-        P = self.forward(self.test_images)
-        return np.sum(np.argmax(P, axis = 0) == self.test_labels) / float(len(self.test_labels))
-
-if __name__ == '__main__':
-    "simple neural network"
-#    createDataFiles()
-
-    train_images = np.load('train_images.npy')
-    train_labels = np.load('train_labels.npy')
-    test_images = np.load('test_images.npy')
-    test_labels = np.load('test_labels.npy')
-    
-    train_images, test_images = dataPreprocessing(train_images, test_images)
-#    
-    fan_out_list = [300]
-    lr = 0.001
-    lam = 0.0005
-    batch_size = 100
-    num_epoch = 10
-    
-    num_layers = len(fan_out_list)
-    out_dim = 10
-    
-    inst = SimNet(fan_out_list, num_layers, train_images, train_labels, test_images, 
-                  test_labels, out_dim, lr, lam, batch_size, num_epoch)
-    loss_list = inst.update()
-    accuracy = inst.test()
-    print(accuracy)
+        P = self.forward(test_images)
+        return np.sum(np.argmax(P, axis = 0) == test_labels) / float(len(test_labels))

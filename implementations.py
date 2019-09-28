@@ -124,6 +124,12 @@ def evaluate(w, tx_test, y_test):
     
 
 if __name__ == '__main__':
+    
+    train_file = '../project1_data/train.csv'
+    train_data = np.genfromtxt(train_file, delimiter = ',', dtype = 'U')
+    
+    
+    
     N = 600
     D = 10
     
@@ -147,8 +153,8 @@ if __name__ == '__main__':
     initial_w = np.random.rand(D + 1)
     
     
-    w, loss = least_squares_GD(y, tx, initial_w, max_iters, gamma)
-    print(loss)
+#    w, loss = least_squares_GD(y, tx, initial_w, max_iters, gamma)
+#    print(loss)
 
 #    w, loss = least_squares_SGD(y, tx, initial_w, max_iters, gamma)
 #    print(loss)
@@ -166,5 +172,5 @@ if __name__ == '__main__':
 #    print(loss)
     
     
-    accuracy = evaluate(w, tx_test, y_test)
-    print(accuracy)
+#    accuracy = evaluate(w, tx_test, y_test)
+#    print(accuracy)
