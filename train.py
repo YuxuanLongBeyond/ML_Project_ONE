@@ -112,8 +112,11 @@ def train_test(test_list, whitening = True, ensemble = False, method = 'ls',
     
         if whitening:
             M, mean = data_whitening(x, epsilon) 
-            x_tr = np.dot(x_tr - mean, M)
-            x_tst = np.dot(x_tst - mean, M)
+            
+            x_tr -= mean
+            x_tst -= mean
+#            x_tr = np.dot(x_tr - mean, M)
+#            x_tst = np.dot(x_tst - mean, M)
             
             M_list.append(M)
             mean_list.append(mean)
@@ -177,20 +180,20 @@ if __name__ == '__main__':
     whitening = True
     ensemble = False
     method = 'dl' # 'ls', 'log', 'dl'
-    ratio = 0.999
-    max_iters = 10000
+    ratio = 0.9 # 0.999
+    max_iters = 1000
     gamma = 0.001
-    lambda_ = 0.001
-    epsilon = 1e-9
+    lambda_ = 0.0001
+    epsilon = 1e-9 # 1e-9
     num_ensem_list = np.array([10, 2, 6, 2, 9, 2]) * 10
     data_num_list = [4429, 69982, 7562, 73790, 26123, 68114]
     
-    fan_out_list = [30, 15]
-    lr = 0.0001
-    lam = 0.0005
-    batch_size = 100
-    num_epoch = 200
-    out_dim = 2    
+    fan_out_list = [30, 15] # [30, 15]
+    lr = 0.001 # 0.001
+    lam = 0.0005 # 0.0005
+    batch_size = 100 # 100
+    num_epoch = 200 # 200
+    out_dim = 2 #2
     
     if train:
         W_collection, b_collection, M_list, mean_list = train_test(test_list, whitening, ensemble, 
@@ -204,8 +207,8 @@ if __name__ == '__main__':
 
     
     if final_test:
-#        test_file = '../project1_data/test.csv'
-#        test_data = np.genfromtxt(test_file, delimiter = ',', dtype = 'U')
+        test_file = '../project1_data/test.csv'
+        test_data = np.genfromtxt(test_file, delimiter = ',', dtype = 'U')
         
         data = test_data[1:]
         ids = data[:, 0]
@@ -228,7 +231,8 @@ if __name__ == '__main__':
             if whitening:
 #                M, mean = data_whitening(x, epsilon) 
 #                x = np.dot(x - mean, M)
-                x = np.dot(x - mean_list[i], M_list[i])
+#                x = np.dot(x - mean_list[i], M_list[i])
+                x = x - mean_list[i]
 
             x = np.concatenate((np.ones((x.shape[0],1)), x), axis = 1)
 

@@ -8,11 +8,6 @@ Created on Thu Mar 21 10:53:43 2019
 import numpy as np
 
 
-def dataPreprocessing(train_images, test_images):
-    # data pre-processing
-    u = np.mean(train_images, axis = 1).reshape((train_images.shape[0], 1))
-    return (train_images - u), (test_images - u)
-
 class SimNet:
     def __init__(self, fan_out_list, data_X, data_Y, 
                  out_dim, lr, lam, batch_size, num_epoch):
