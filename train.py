@@ -33,8 +33,6 @@ def data_whitening(x, epsilon = 1e-9):
     M = V / np.sqrt(u + epsilon)
     return M, mean
 
-
-
 def ensemble_learning(max_iters, gamma, lambda_, dim, num_ensem, x_tr, y_tr, method = 'ls'):
     mask_pos = (y_tr == 1.0)
     mask_neg = ~mask_pos
@@ -113,10 +111,10 @@ def train_test(test_list, whitening = True, ensemble = False, method = 'ls',
         if whitening:
             M, mean = data_whitening(x, epsilon) 
             
-            x_tr -= mean
-            x_tst -= mean
-#            x_tr = np.dot(x_tr - mean, M)
-#            x_tst = np.dot(x_tst - mean, M)
+#            x_tr -= mean
+#            x_tst -= mean
+            x_tr = np.dot(x_tr - mean, M)
+            x_tst = np.dot(x_tst - mean, M)
             
             M_list.append(M)
             mean_list.append(mean)
@@ -180,7 +178,7 @@ if __name__ == '__main__':
     whitening = True
     ensemble = False
     method = 'dl' # 'ls', 'log', 'dl'
-    ratio = 0.9 # 0.999
+    ratio = 0.999 # 0.999
     max_iters = 1000
     gamma = 0.001
     lambda_ = 0.0001
@@ -231,8 +229,8 @@ if __name__ == '__main__':
             if whitening:
 #                M, mean = data_whitening(x, epsilon) 
 #                x = np.dot(x - mean, M)
-#                x = np.dot(x - mean_list[i], M_list[i])
-                x = x - mean_list[i]
+                x = np.dot(x - mean_list[i], M_list[i])
+#                x = x - mean_list[i]
 
             x = np.concatenate((np.ones((x.shape[0],1)), x), axis = 1)
 
