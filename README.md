@@ -9,3 +9,4 @@ To Do List:
 3. Group members need to check all functions in ''implementation' if there is any typo.
 4. More test on hyperparameters. Also test on various methods.
 5. Try to deal with hard data type, e.g. B, BC, D.
+6. Do k-fold cross-validation.

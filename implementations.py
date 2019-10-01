@@ -110,7 +110,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         H = np.dot(tx.T * ((1 - s) * s), tx) + lambda_ * np.eye(D)
         d = solve(H, g, D)
         w -= gamma * d
-    loss = compute_log_loss(y, tx, w) - lambda_ * np.dot(w, w) / 2.0
+    loss = compute_log_loss(y, tx, w) + lambda_ * np.dot(w, w) / 2.0
     return w, loss
 
 def evaluate(w, tx_test, y_test):
