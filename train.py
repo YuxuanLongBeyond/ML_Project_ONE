@@ -133,8 +133,8 @@ if __name__ == '__main__':
     
 
     train = False
-    validate = True
-    final_test = False
+    validate = False
+    final_test = True
     
     whitening = True
     method = 'ls' # 'ls', 'log', 'dl'
@@ -191,7 +191,7 @@ if __name__ == '__main__':
             validate_set.append(accuracy_list)
     
     if final_test:
-        test_file = '../project1_data/test.csv'
+        test_file = './data/test.csv'
         test_data = np.genfromtxt(test_file, delimiter = ',', dtype = 'U')
         
         data = test_data[1:]
