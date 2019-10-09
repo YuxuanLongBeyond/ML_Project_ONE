@@ -7,14 +7,22 @@ Created on Fri Sep 27 22:08:41 2019
 """
 import numpy as np
 
+"""
 # feature engineering
-# data filtering and selecting
+# data filtering and selection
+"""
 
 def cal_mask(mask_999, index):
+    """
+    Generate mask for croping the redundant feature (-999s)
+    """
     mask = np.all(mask_999[:, index], axis = 1) & (np.sum(mask_999, axis = 1) == len(index))
     return mask, np.sum(mask)
 
 def save_data(features, labels, mask, file_name):
+    """
+    Given the mask, we crop the feature from some data of the same category
+    """
     label = labels[mask]
     label = label.reshape((len(label), 1))
     data = np.concatenate((features[mask, :], label), axis = 1)
@@ -23,7 +31,7 @@ def save_data(features, labels, mask, file_name):
 
 if __name__ == '__main__':
     
-    train_file = '../project1_data/train.csv'
+    train_file = './data/train.csv'
     train_data = np.genfromtxt(train_file, delimiter = ',', dtype = 'U')
     
     data = train_data[1:]
@@ -39,7 +47,7 @@ if __name__ == '__main__':
     num_999 = np.sum(mask_999, axis = 0) / mask_999.shape[0]
     
     # we roughly divide data into 8 types
-    # A, B, C all refer to feature ids having 999s
+    # A, B, C all refer to feature ids having some 999s
     # note id starts from 0
     A = [0]
     B = [4, 5, 6, 12, 26, 27, 28]
@@ -62,11 +70,12 @@ if __name__ == '__main__':
     D_num = np.sum(mask_D)
     
     print(A_num + B_num + C_num + AB_num + AC_num + BC_num + ABC_num + D_num)
+    # There are two types that do not exist
     # In summary, 6 types of feature
     
     
     # we separate data and record it into 6 files
-    # the numpy file is save as [features, labels] - 31 columns
+    # the numpy file is save as [features, labels]
     save_data(features, labels, mask_A, './train_data/data_A')
     save_data(features, labels, mask_B, './train_data/data_B')
     save_data(features, labels, mask_AB, './train_data/data_AB')
@@ -74,10 +83,3 @@ if __name__ == '__main__':
     save_data(features, labels, mask_ABC, './train_data/data_ABC')
     save_data(features, labels, mask_D, './train_data/data_D')
 
-    
-    
-    
-    
-    
-    
-    
