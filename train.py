@@ -133,11 +133,11 @@ if __name__ == '__main__':
     
 
     train = False
-    validate = False
-    final_test = True
+    validate = True
+    final_test = False
     
     whitening = True
-    method = 'ls' # 'ls', 'log', 'dl'
+    method = 'log' # 'ls', 'log', 'dl'
     
     max_iters = 1000
     gamma = 0.1

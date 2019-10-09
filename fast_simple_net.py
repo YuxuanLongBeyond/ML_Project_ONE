@@ -44,7 +44,8 @@ class SimNet:
         return tem * X
     
     def gradReLU(self, Z, grad):
-        return Z * grad
+#        return Z * grad
+        return (Z > 0) * grad
     
     def Sigmoid(self, X):
         return 1 / (1 + np.exp(-X))
@@ -154,7 +155,7 @@ class SimNet:
                 W_grad, b_grad = self.backward(batch_label, num)
                     
                 W_grad = W_grad / num + self.lam * self.W_list
-                b_grad /= num
+                b_grad /= num + + self.lam * self.b_list
                 
                 # update with l2 regularization (weight decay)
                 # Adam update rule
