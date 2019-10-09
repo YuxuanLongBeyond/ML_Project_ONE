@@ -24,7 +24,7 @@ def solve(A, b, D, theta = 0.0001):
     try:
         w = np.linalg.solve(A, b)
     except np.linalg.LinAlgError:
-    # When A is singular, we add small positive number number on diagonal
+    # When A is singular, add small positive number number on diagonal
         w = np.linalg.solve(A + np.eye(D) * theta, b)
     return w
 

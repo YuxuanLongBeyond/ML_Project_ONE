@@ -11,6 +11,22 @@ import numpy as np
 class SimNet:
     def __init__(self, fan_out_list, data_X, data_Y, 
                  out_dim, lr, lam, batch_size, num_epoch):
+        
+        """
+        A super simple neural network model, fully connected
+        Only include linear layer, activations and softmax
+
+        #######Parameters######
+        fan_out_list    the list that collects the number of neurons in hidden layer of the neural network
+        data_X          training data, a matrix with feature as its columns
+        data_Y          labels for training data
+        out_dim         output dimension at last layer in the neural network (before softmax)
+        lr              learning rate when optimizing the neural network
+        lam             parameter for weight decay (l2 regularization)
+        batch_size      batch size for stochastic gradient descent in neural network
+        num_epoch       number of epochs when optimizing the neural network
+        """        
+        
         self.fan_out_list = fan_out_list
         self.num_layers = len(fan_out_list)
         self.data_X = data_X
@@ -27,46 +43,50 @@ class SimNet:
         W_list = []
         b_list = []
         for i in range(self.num_layers + 1):
-            # He initialization
+            # He's initialization
             W_list.append(np.random.randn(dim_list[i], dim_list[i + 1]) / np.sqrt(dim_list[i]) / 2)
             b_list.append(np.zeros(dim_list[i + 1]))
-        print(len(W_list))
-        print(W_list[0].shape)
-        print(W_list[1].shape)
         self.W_list = np.array(W_list)
         self.b_list = np.array(b_list)
         
     
     
     def ReLU(self, X):
-        # parallel operation
+        """
+        ReLU activation function
+        """
         tem = X > 0
         return tem * X
     
     def gradReLU(self, Z, grad):
-#        return Z * grad
         return (Z > 0) * grad
     
     def Sigmoid(self, X):
+        """
+        Sigmoid activation function
+        """
         return 1 / (1 + np.exp(-X))
     
     def gradSigmoid(self, Z, grad):
         return (1 - Z) * Z * grad
     
     def Linear(self, X, num):
-        # parallel operation
+        """
+        Linear layer
+        """
         W = self.W_list[num]
         b = self.b_list[num]
         Y = np.dot(W.T, X) + b.reshape((W.shape[1], 1))
         return Y
     
     def softmax(self, X):
-        # parallel operation
         tem = np.exp(X)
         return tem / np.sum(tem, axis = 0)
     
     def sample(self):
-        # sample batches of data for SGD
+        """
+        Generate random integers (not repetitive) for sample batch
+        """
         
         v = np.random.rand(self.N)
         
@@ -75,7 +95,9 @@ class SimNet:
         return index  
     
     def forward(self,X):
-        # parallel operation
+        """
+        Forward the input batch through the network
+        """
         Z_list = [X]
         for i in range(self.num_layers + 1):
             Z = self.Linear(Z_list[i], i)
@@ -89,7 +111,10 @@ class SimNet:
         return P
     
     def backward(self, label, data_num):
-        # parallel operation
+        """
+        Back propagation and collect all gradients 
+        """
+        
         W_grad_list = []
         b_grad_list = []
         
@@ -116,8 +141,10 @@ class SimNet:
         return np.array(W_grad_list), np.array(b_grad_list)
 
     def optimize(self):
-        # compute final gradient and update
-        # collect loss
+        """
+        Iterate to update the weights by stochastic gradient descent
+        Softmax loss is also computed
+        """
         
         m_W = 0.0
         v_W = 0.0
@@ -154,12 +181,12 @@ class SimNet:
                               
                 W_grad, b_grad = self.backward(batch_label, num)
                     
+                # update with l2 regularization (weight decay)
                 W_grad = W_grad / num + self.lam * self.W_list
                 b_grad /= num + + self.lam * self.b_list
                 
-                # update with l2 regularization (weight decay)
-                # Adam update rule
                 
+                # Adam update rule
                 m_W, v_W, W_grad = self.adamUpdate(m_W, v_W, beta1, beta2, epsilon, W_grad, beta1_t, beta2_t)
                 m_b, v_b, b_grad = self.adamUpdate(m_b, v_b, beta1, beta2, epsilon, b_grad, beta1_t, beta2_t)
                 beta1_t *= beta1
@@ -170,17 +197,20 @@ class SimNet:
 #                print(loss)
                 loss_list.append(loss)
                 
-#            # learning rate decay
-#            self.lr *= 0.95
         return loss_list
         
     def adamUpdate(self, m, v, beta1, beta2, epsilon, grad, beta1_t, beta2_t):
+        """
+        Adam updatem include first and second momentum
+        """
         new_m = beta1 * m + (1 - beta1) * grad
         new_v = beta2 * v + (1 - beta2) * (grad ** 2)
         new_grad = new_m / (1 - beta1_t) / ((new_v / (1 - beta2_t)) ** 0.5 + epsilon)
         return new_m, new_v, new_grad
     
     def test(self, test_images, test_labels):
-        # test the model
+        """
+        test the model if test data is given
+        """
         P = self.forward(test_images)
         return np.sum(np.argmax(P, axis = 0) == test_labels) / float(len(test_labels))

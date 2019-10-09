@@ -1,12 +1,16 @@
-# ML_Project_ONE
-Implementation of basic ML methods: Least squares, logistic regression
+# EPFL Machine Learning Higgs 2019
 
-Note that fake data is made for temporary test.
+Please put the train data (train.csv) and test data (test.csv) in the folder 'data', then directly run 'run.py' to re-produce the submission file.
 
-To Do List:
-1. All the loss functions are coded as indicated in the lectures. This may cause some issues, for instance, the loss has not been averaged, e.g. logistic regression.
-2. More feature engineering is desired.
-3. Group members need to check all functions in ''implementation' if there is any typo.
-4. More test on hyperparameters. Also test on various methods.
-5. Try to deal with hard data type, e.g. B, BC, D.
-6. Do k-fold cross-validation.
+There are three important variables in 'run.py':
+train_validate --Only if it is True, then training on multiple models is performed. By default, it is set to False.
+final_test -- Only if it is True, then optimal parameters are automatically loaded and the test is performed (submission file will be generated). By default, it is set to True.
+method -- a string that is either 'ls', 'log' or 'dl' (those represent ridge regression, logistic regression and deep learning respectively). By default, it is set to be 'dl'.
+
+If you want to re-produce the optimal parameters, please set train_validate to True. However, it will take plenty of time ( at least over 15 minutes) to perform full training when we set method to 'dl'.
+
+The content of files are explained as below:
+The file 'run.py' organizes all algorithms to do training and testing, also including data pre-processing. The computed parameters are recorded in the folder 'parameters'.
+The file 'implementations' involves basic implementation of some ML algorithms, e.g. least squares and logistic regression.
+The file 'fast_simple_net.py' contains a simple neural network model, with forward and backward path.
+The file 'feature_processing.py' performs separation of training data, and stores stores 6 types of training data into the folder 'train_data'.
