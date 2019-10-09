@@ -8,7 +8,7 @@ train_validate --Only if it is True, then training on multiple models is perform
 
 final_test -- Only if it is True, then optimal parameters are automatically loaded and the test is performed (submission file will be generated). By default, it is set to True.
 
-method -- a string that is either 'ls', 'log' or 'dl' (they represent ridge regression, logistic regression and deep learning). By default, it is set to be 'dl'.
+method -- a string that is either 'ls', 'log' or 'dl' (they represent ridge regression, logistic regression and deep learning). By default, it is set to be 'dl'.
 
 
 If you want to re-produce the optimal parameters, please set train_validate to True. However, it will take plenty of time ( at least over 15 minutes) to perform full training when we set method to 'dl'.
