@@ -145,13 +145,15 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
     
     # Save all parameters
     if whitening:
-        np.save('./parameters/mean_list_val' + str(val_num), np.array(mean_list))
-        np.save('./parameters/M_list_val' + str(val_num), np.array(M_list))
+        np.save('./parameters/data_whitening/mean_list_val' + str(val_num), np.array(mean_list))
+        np.save('./parameters/data_whitening/M_list_val' + str(val_num), np.array(M_list))
     if method == 'dl':
-        np.save('./parameters/W_collection_dl_val' + str(val_num), np.array(W_collection))
-        np.save('./parameters/b_collection_dl_val' + str(val_num), np.array(b_collection))
-    else:
-        np.save('./parameters/w_' + method+ '_val' + str(val_num), np.array(w_list))
+        np.save('./parameters/neural_net/W_collection_dl_val' + str(val_num), np.array(W_collection))
+        np.save('./parameters/neural_net/b_collection_dl_val' + str(val_num), np.array(b_collection))
+    elif method == 'ls':
+        np.save('./parameters/ridge/w_' + method+ '_val' + str(val_num), np.array(w_list))
+    elif method == 'log':
+        np.save('./parameters/logistic/w_' + method+ '_val' + str(val_num), np.array(w_list))
     return accuracy_list
 
 
@@ -167,13 +169,17 @@ if __name__ == '__main__':
     ### Those parameters are explained in 'train_test' function above
     k_fold = 5 # for k-fold cross validation
     
+    # data whitening
     whitening = True
     epsilon = 1e-9 # 1e-9
     
-    # parameters for logistic regression or ridge regression
-    max_iters = 1000
-    gamma = 0.1
-    lambda_ = 0.0001
+    # parameters for logistic regression
+    max_iters = 100
+    gamma = 1.0
+    lambda_log = 0.00001
+    
+    # parameter for ridge regression 
+    lambda_ls = 0.0001
 
     # parameters for neural network
     fan_out_list = [25, 10] # [25, 10]
@@ -184,6 +190,18 @@ if __name__ == '__main__':
     out_dim = 2 # 2 n (binary classifier)
     
 
+    
+    
+    if method == 'ls':
+        lambda_ = lambda_ls
+    elif method == 'log':
+        lambda_ = lambda_log
+    elif method == 'dl':
+        # set a dummy lambda
+        lambda_ = 0.001
+    else:
+        print('The method is not available')
+        raise ValueError
     
     # collect the number of training data points in each data type
     data_num_list = np.array([4429, 69982, 7562, 73790, 26123, 68114])    
@@ -255,13 +273,15 @@ if __name__ == '__main__':
         # collect prediction from each model
         prediction_set = []
         for val_num in range(k_fold):
-            M_list = np.load('./parameters/M_list_val' + str(val_num) + '.npy')
-            mean_list = np.load('./parameters/mean_list_val' + str(val_num) + '.npy')
+            M_list = np.load('./parameters/data_whitening/M_list_val' + str(val_num) + '.npy')
+            mean_list = np.load('./parameters/data_whitening/mean_list_val' + str(val_num) + '.npy')
             if method == 'dl':
-                W_collection = np.load('./parameters/W_collection_dl_val' + str(val_num) + '.npy')
-                b_collection = np.load('./parameters/b_collection_dl_val' + str(val_num) + '.npy')  
-            else:
-                w_list = np.load('./parameters/w_' + method+ '_val' + str(val_num) + '.npy')
+                W_collection = np.load('./parameters/neural_net/W_collection_dl_val' + str(val_num) + '.npy')
+                b_collection = np.load('./parameters/neural_net/b_collection_dl_val' + str(val_num) + '.npy')  
+            elif method == 'ls':
+                w_list = np.load('./parameters/ridge/w_' + method+ '_val' + str(val_num) + '.npy')
+            elif method == 'log':
+                w_list = np.load('./parameters/logistic/w_' + method+ '_val' + str(val_num) + '.npy')
             
             
             prediction = np.zeros(N, np.int8)
