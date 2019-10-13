@@ -103,7 +103,7 @@ def ridge_regression(y, tx, lambda_):
     The basic idea is to add some small positive number to the diagonal
     in order to avoid overfitting and enhance the numerical stability.
     
-    It returns optimal weight and MSE loss plus the l2 regularization loss.
+    It returns optimal weight and MSE loss without the l2 regularization loss.
     
     """
     N, D = tx.shape
@@ -112,7 +112,7 @@ def ridge_regression(y, tx, lambda_):
     b = np.dot(tx.T, y)
     w = solve(A, b, D)
     
-    loss = compute_ls_loss(y, tx, w, N) + lambda_ * np.dot(w, w)
+    loss = compute_ls_loss(y, tx, w, N) # + lambda_ * np.dot(w, w)
     return w, loss
 
 
@@ -151,7 +151,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """
     The function performs regularized logistic regression, which is 
     similar to the function logistic_regression.
-    The loss to be minimized involves l2 regularization of weights.
+    The loss to be minimized does not involve l2 regularization of weights.
     """
     N, D = tx.shape
     w = initial_w
@@ -161,7 +161,7 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
         H = np.dot(tx.T * ((1 - s) * s), tx) + lambda_ * np.eye(D)
         d = solve(H, g, D)
         w -= gamma * d
-    loss = compute_log_loss(y, tx, w) + lambda_ * np.dot(w, w) / 2.0
+    loss = compute_log_loss(y, tx, w) # + lambda_ * np.dot(w, w) / 2.0
     return w, loss
 
 def evaluate(w, tx_test, y_test):
