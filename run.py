@@ -135,6 +135,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
 
             inst = sim.SimNet(fan_out_list, x_tr[:, 1:].T, y_tr, 
                               out_dim, lr, lam, batch_size, num_epoch)
+            inst.optimize()
             accuracy = inst.test(x_tst[:, 1:].T, y_tst)
             W_collection.append(inst.W_list)
             b_collection.append(inst.b_list)
@@ -159,8 +160,8 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
 
 if __name__ == '__main__':
     
-    train_validate = False
-    final_test = True
+    train_validate = False # False
+    final_test = True # True
     
     # Select a ML method to build models, e.g. logistic regression
     method = 'dl' # 'ls', 'log', 'dl'

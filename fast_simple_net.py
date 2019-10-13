@@ -44,7 +44,7 @@ class SimNet:
         b_list = []
         for i in range(self.num_layers + 1):
             # He's initialization
-            W_list.append(np.random.randn(dim_list[i], dim_list[i + 1]) / np.sqrt(dim_list[i]) / 2)
+            W_list.append(np.random.randn(dim_list[i], dim_list[i + 1]) * np.sqrt(2.0 / dim_list[i]))
             b_list.append(np.zeros(dim_list[i + 1]))
         self.W_list = np.array(W_list)
         self.b_list = np.array(b_list)
@@ -122,7 +122,6 @@ class SimNet:
         grad[label, range(data_num)] -= 1.0  # gradient for softmax
         # equivalent to subtracting the ground truth label matrix
         all_b_grad = grad
-        
         for i in range(self.num_layers + 1):
             Z = self.Z_list[-i - 1]
             X = self.Z_list[-i - 2]
@@ -159,7 +158,6 @@ class SimNet:
         
         loss_list = []
         for i in range(self.num_epoch):
-#            print('Epoch ' + str(i) + '\n')
             index = self.sample()
             for j in range(0, self.N, self.batch_size): 
                 if (j + self.batch_size) <= self.N:
