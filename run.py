@@ -191,7 +191,7 @@ if __name__ == '__main__':
     final_test = True # True
     
     # Select a ML method to build models, e.g. logistic regression
-    method = 'ls' # 'ls', 'log', 'dl'
+    method = 'dl' # 'ls', 'log', 'dl'
     
     ### Set up hyper-parameters
     ### Those parameters are explained in 'train_test' function above
