@@ -43,6 +43,13 @@ def data_whitening(x, epsilon = 1e-9):
     M = np.dot(V / np.sqrt(u + epsilon), V.T)
     return M, mean
 
+def build_poly(x, degree = 2):
+    X = np.ones((x.shape[0], 1))
+    for i in range(degree):
+        X = np.concatenate((X, x ** (i + 1)), axis = 1)
+    return X
+
+
 def train_test(data_list, test_interval, val_num, test_list, whitening = True,
                method = 'ls', name_list = ['A', 'B', 'AB', 'BC', 'ABC', 'D'],
                max_iters = 1000, gamma = 0.01, lambda_ = 0.001, epsilon = 1e-9, 
@@ -106,7 +113,11 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
         x_tr = x[index, :]
         y_tr = y[index]
         x_tst = x[i1 : i2, :]
-        y_tst = y[i1 : i2]        
+        y_tst = y[i1 : i2]     
+        
+        
+        
+        # print('Dummy accuracy is ', np.sum(y_tst == -1) / len(y_tst))
         
         # we use training data to obtain transformation
         if whitening:
@@ -117,12 +128,17 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
             M_list.append(M)
             mean_list.append(mean)
         
-        x_tr = np.concatenate((np.ones((x_tr.shape[0],1)), x_tr), axis = 1)
-        x_tst = np.concatenate((np.ones((x_tst.shape[0],1)), x_tst), axis = 1)
+        x_tr = build_poly(x_tr)
+        x_tst = build_poly(x_tst)
+        print(x_tr.shape[1])
           
         if method == 'ls':
             # least squares / ridge regression
             w, loss = imp.ridge_regression(y_tr, x_tr, lambda_)
+            
+#            w = np.dot(x_tr.T, y_tr) / lambda_
+#            loss = 0
+            
             accuracy = imp.evaluate(w, x_tst, y_tst)
             accuracy_list.append(accuracy)
             w_list.append(w)
@@ -172,7 +188,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
 if __name__ == '__main__':
     
     train_validate = False # False
-    final_test = True # True
+    final_test = False # True
     
     # Select a ML method to build models, e.g. logistic regression
     method = 'dl' # 'ls', 'log', 'dl'
@@ -191,7 +207,7 @@ if __name__ == '__main__':
     lambda_log = 0.00001
     
     # parameter for ridge regression 
-    lambda_ls = 0.001
+    lambda_ls = 0.001 # 0.001
 
     # parameters for neural network
     fan_out_list = [25, 10] # [25, 10]
@@ -239,7 +255,7 @@ if __name__ == '__main__':
 
    
     
-    train = False
+    train = True
 
     if train or train_validate:
         data_A = np.load('./train_data/data_A.npy')
@@ -308,8 +324,9 @@ if __name__ == '__main__':
                 if whitening:
                     x = np.dot(x - mean_list[i], M_list[i])
     
-                x = np.concatenate((np.ones((x.shape[0],1)), x), axis = 1)
-    
+#                x = np.concatenate((np.ones((x.shape[0],1)), x), axis = 1)
+            
+                x = build_poly(x)
 
                 if method == 'dl':
                     # pass a dummy x and y to SimNet

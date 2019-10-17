@@ -171,7 +171,7 @@ def evaluate(w, tx_test, y_test):
     y_hat = np.dot(tx_test, w)
     
     y_hat[y_hat > 0] = 1
-    y_hat[y_hat < 0] = -1
+    y_hat[y_hat <= 0] = -1
     
     accuracy = np.sum(y_test == y_hat) / len(y_test)
     return accuracy
