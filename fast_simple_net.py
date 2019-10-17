@@ -144,6 +144,7 @@ class SimNet:
         Iterate to update the weights by stochastic gradient descent
         Softmax loss is also computed
         """
+
         
         m_W = 0.0
         v_W = 0.0
@@ -177,6 +178,7 @@ class SimNet:
                  # we do not display loss that contains regularization term
                 loss = -np.sum(np.log(P[batch_label, range(num)])) / num
                               
+                
                 W_grad, b_grad = self.backward(batch_label, num)
                     
                 # update with l2 regularization (weight decay)
@@ -211,4 +213,15 @@ class SimNet:
         test the model if test data is given
         """
         P = self.forward(test_images)
-        return np.sum(np.argmax(P, axis = 0) == test_labels) / float(len(test_labels))
+        pred = np.argmax(P, axis = 0)
+        
+        accuracy = np.sum(pred == test_labels) / float(len(test_labels))
+        tn = np.sum((pred == 0) & (test_labels == 0))
+        tp = np.sum((pred == 1) & (test_labels == 1))
+        fp = np.sum((pred == 1) & (test_labels == 0))
+        fn = np.sum((pred == 0) & (test_labels == 1))
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        print('The recall is ', recall)
+        print('The precision is ', precision)
+        return accuracy, precision, recall

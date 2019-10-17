@@ -51,7 +51,13 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
     """
     Train the model and test the accuracy.
     Note that there are 6 models to be trained that deal with 6 types of data.
-    Return the list of accuracies for the models
+    Return: 
+        accuracy_list: list of accuracies for the models
+        loss_list: collection of final losses. 
+                    (for neural network, we collect all the losses)
+                    
+        recall_list: collection of recalls (only for neural net)
+        precision_list: collection of precision (only for neural net)
     
     
     #######Parameters######
@@ -85,7 +91,9 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
     accuracy_list = []
     
     w_list = []
-
+    loss_list = []
+    precision_list = []
+    recall_list = []
     # iterate through all data types, train and test each model on a specific method
     for i in range(len(name_list)):
         
@@ -132,16 +140,19 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
             y_tr[y_tr == -1] = 0
             y_tst = y_tst.astype(np.int8)
             y_tst[y_tst == -1] = 0
-
             inst = sim.SimNet(fan_out_list, x_tr[:, 1:].T, y_tr, 
                               out_dim, lr, lam, batch_size, num_epoch)
-            inst.optimize()
-            accuracy = inst.test(x_tst[:, 1:].T, y_tst)
+            loss = inst.optimize()
+            accuracy, precision, recall= inst.test(x_tst[:, 1:].T, y_tst)
+            recall_list.append(recall)
+            precision_list.append(precision)
             W_collection.append(inst.W_list)
             b_collection.append(inst.b_list)
             accuracy_list.append(accuracy)
         else:
             raise ValueError
+        loss_list.append(loss)
+        
         print('For training data ', name_list[i], ', the average accuracy is: ', accuracy, '\n')
     
     # Save all parameters
@@ -155,7 +166,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
         np.save('./parameters/ridge/w_' + method+ '_val' + str(val_num), np.array(w_list))
     elif method == 'log':
         np.save('./parameters/logistic/w_' + method+ '_val' + str(val_num), np.array(w_list))
-    return accuracy_list
+    return accuracy_list, precision_list, recall_list, loss_list
 
 
 if __name__ == '__main__':
@@ -180,7 +191,7 @@ if __name__ == '__main__':
     lambda_log = 0.00001
     
     # parameter for ridge regression 
-    lambda_ls = 0.0001
+    lambda_ls = 0.001
 
     # parameters for neural network
     fan_out_list = [25, 10] # [25, 10]
@@ -190,7 +201,7 @@ if __name__ == '__main__':
     num_epoch = 300 # 300
     out_dim = 2 # 2 n (binary classifier)
     
-
+    
     
     
     if method == 'ls':
@@ -226,20 +237,24 @@ if __name__ == '__main__':
     test_list = [A, B, AB, BC, ABC, D]
     name_list = ['A', 'B', 'AB', 'BC', 'ABC', 'D']
 
-    data_A = np.load('./train_data/data_A.npy')
-    data_B = np.load('./train_data/data_B.npy')
-    data_AB = np.load('./train_data/data_AB.npy')
-    data_BC = np.load('./train_data/data_BC.npy')
-    data_ABC = np.load('./train_data/data_ABC.npy')
-    data_D = np.load('./train_data/data_D.npy')
-    data_list = [data_A, data_B, data_AB, data_BC, data_ABC, data_D]    
+   
     
     train = False
+
+    if train or train_validate:
+        data_A = np.load('./train_data/data_A.npy')
+        data_B = np.load('./train_data/data_B.npy')
+        data_AB = np.load('./train_data/data_AB.npy')
+        data_BC = np.load('./train_data/data_BC.npy')
+        data_ABC = np.load('./train_data/data_ABC.npy')
+        data_D = np.load('./train_data/data_D.npy')
+        data_list = [data_A, data_B, data_AB, data_BC, data_ABC, data_D]     
+    
     # select the first interval for simple run of training, just for test
     val_num = 0
     test_interval = index_set[:, val_num, :]
     if train:
-        accuracy_list = train_test(data_list, test_interval, val_num, test_list, whitening,
+        accuracy_list, precision_list, recall_list, loss_list = train_test(data_list, test_interval, val_num, test_list, whitening,
                                    method, name_list, max_iters, 
                                    gamma, lambda_ , epsilon, 
                                    fan_out_list, out_dim, lr, lam, 
@@ -252,7 +267,7 @@ if __name__ == '__main__':
     if train_validate:
         for val_num in range(k_fold):
             test_interval = index_set[:, val_num, :]
-            accuracy_list = train_test(data_list, test_interval, val_num, test_list, whitening,
+            accuracy_list, precision_list, recall_list, loss_list= train_test(data_list, test_interval, val_num, test_list, whitening,
                                        method, name_list, max_iters, 
                                        gamma, lambda_ , epsilon, 
                                        fan_out_list, out_dim, lr, lam, 
