@@ -43,7 +43,7 @@ def data_whitening(x, epsilon = 1e-9):
     M = np.dot(V / np.sqrt(u + epsilon), V.T)
     return M, mean
 
-def build_poly(x, degree = 2):
+def build_poly(x, degree = 1):
     X = np.ones((x.shape[0], 1))
     for i in range(degree):
         X = np.concatenate((X, x ** (i + 1)), axis = 1)
@@ -188,7 +188,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
 if __name__ == '__main__':
     
     train_validate = False # False
-    final_test = False # True
+    final_test = True # True
     
     # Select a ML method to build models, e.g. logistic regression
     method = 'dl' # 'ls', 'log', 'dl'
@@ -255,7 +255,7 @@ if __name__ == '__main__':
 
    
     
-    train = True
+    train = False
 
     if train or train_validate:
         data_A = np.load('./train_data/data_A.npy')
