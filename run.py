@@ -152,11 +152,12 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
             w_list.append(w)
         elif method == 'dl':
             # deep learning method
+            fan_out = fan_out_list[i]
             y_tr = y_tr.astype(np.int8)
             y_tr[y_tr == -1] = 0
             y_tst = y_tst.astype(np.int8)
             y_tst[y_tst == -1] = 0
-            inst = sim.SimNet(fan_out_list, x_tr[:, 1:].T, y_tr, 
+            inst = sim.SimNet(fan_out, x_tr[:, 1:].T, y_tr, 
                               out_dim, lr, lam, batch_size, num_epoch)
             loss = inst.optimize()
             accuracy, precision, recall= inst.test(x_tst[:, 1:].T, y_tst)
@@ -186,7 +187,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
 
 
 if __name__ == '__main__':
-    
+    num_features = [29, 23, 22, 20, 19, 30] # lengths of data points
     train_validate = False # False
     final_test = True # True
     
@@ -210,7 +211,8 @@ if __name__ == '__main__':
     lambda_ls = 0.001 # 0.001
 
     # parameters for neural network
-    fan_out_list = [25, 10] # [25, 10]
+    fan_out_list = [[25, 10], [27, 27], [25, 10], [24, 24], [23, 23], [34, 34]] # [25, 10]
+#    fan_out_list = [[33, 10], [27, 27, 27], [26, 10], [24, 24, 24], [23, 23], [34, 34, 34]]
     lr = 0.0001 # 0.0001
     lam = 0.001 # 0.001
     batch_size = 100 # 100
@@ -290,6 +292,22 @@ if __name__ == '__main__':
                                        batch_size, num_epoch)
             validate_set.append(accuracy_list)
     
+    validate_set = np.array(validate_set)
+    accu = np.ones(k_fold)
+    A_num = data_num_list[0]
+    B_num = data_num_list[1]
+    AB_num = data_num_list[2]
+    BC_num = data_num_list[3]
+    ABC_num = data_num_list[4]
+    D_num = data_num_list[5]
+    accuracy_storage = []
+    if train_validate:
+        for i in range(k_fold):
+            accu[i] = (validate_set[i,0] * A_num + validate_set[i,1] * B_num + validate_set[i,2] * AB_num + validate_set[i,3] * BC_num + validate_set[i,4] * ABC_num + validate_set[i,5] * D_num)/250000
+            accuracy_storage.append(accu[i])
+        accuracy_storage.append(np.sum(accu)/k_fold)
+        print(accuracy_storage)    
+    
     # test and produce the submission file
     if final_test:
         test_file = './data/test.csv'
@@ -331,7 +349,8 @@ if __name__ == '__main__':
                 if method == 'dl':
                     # pass a dummy x and y to SimNet
                     dummy = np.zeros((2, 2))
-                    inst = sim.SimNet(fan_out_list, dummy, dummy, 
+                    fan_out = fan_out_list[i]
+                    inst = sim.SimNet(fan_out, dummy, dummy, 
                                       out_dim, lr, lam, batch_size, num_epoch)
                     inst.W_list = W_collection[i]
                     inst.b_list = b_collection[i]
