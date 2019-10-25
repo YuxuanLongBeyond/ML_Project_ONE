@@ -1,6 +1,6 @@
 # EPFL Machine Learning Higgs 2019
 
-Please **first** put the train data (**train.csv**) and test data (**test.csv**) in the folder 'data', then directly run 'run.py' to re-produce the submission file.
+Please **first** put the train data (**train.csv**) and test data (**test.csv**) in the folder 'data', then directly run '**run.py**' to re-produce the submission file.
 
 There are three important variables in 'run.py':
 
