@@ -1,7 +1,7 @@
 # EPFL Machine Learning Higgs 2019
 
 (**Python 3** is required and **Numpy** must be installed)
-(To ensure that your Numpy works, you can go to the directory of this folder and type "pip install -r requirements.txt")
+(To ensure that your Numpy works, you can go to the directory of this folder and enter "pip install -r requirements.txt")
 
 Please **first** put the train data (**train.csv**) and test data (**test.csv**) in the folder 'data', then directly run '**run.py**' to re-produce the submission file.
 
