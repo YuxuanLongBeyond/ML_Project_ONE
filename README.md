@@ -19,7 +19,7 @@ The content of files is explained as below:
 
 > The file 'run.py' organizes all algorithms to do training and testing, also including data pre-processing. The computed parameters are recorded in the folder 'parameters'.
 
-> The file 'implementations' involves basic implementation of some ML algorithms, e.g. least squares and logistic regression.
+> The file 'implementations.py' involves basic implementation of some ML algorithms, e.g. least squares and logistic regression.
 
 > The file 'fast_simple_net.py' contains a simple neural network model, with forward and backward path.
 
