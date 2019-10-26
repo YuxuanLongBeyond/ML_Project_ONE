@@ -187,7 +187,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
 
 
 if __name__ == '__main__':
-    num_features = [29, 23, 22, 20, 19, 30] # lengths of data points
+#    num_features = [29, 23, 22, 20, 19, 30] # lengths of data points
     train_validate = False # False
     final_test = True # True
     
@@ -260,12 +260,12 @@ if __name__ == '__main__':
     train = False
 
     if train or train_validate:
-        data_A = np.load('./train_data/data_A.npy')
-        data_B = np.load('./train_data/data_B.npy')
-        data_AB = np.load('./train_data/data_AB.npy')
-        data_BC = np.load('./train_data/data_BC.npy')
-        data_ABC = np.load('./train_data/data_ABC.npy')
-        data_D = np.load('./train_data/data_D.npy')
+        data_A = np.load('./train_data/data_A.npy', allow_pickle = True)
+        data_B = np.load('./train_data/data_B.npy', allow_pickle = True)
+        data_AB = np.load('./train_data/data_AB.npy', allow_pickle = True)
+        data_BC = np.load('./train_data/data_BC.npy', allow_pickle = True)
+        data_ABC = np.load('./train_data/data_ABC.npy', allow_pickle = True)
+        data_D = np.load('./train_data/data_D.npy', allow_pickle = True)
         data_list = [data_A, data_B, data_AB, data_BC, data_ABC, data_D]     
     
     # select the first interval for simple run of training, just for test
@@ -284,6 +284,7 @@ if __name__ == '__main__':
     validate_set = [] # collect accuracy for each validation set
     if train_validate:
         for val_num in range(k_fold):
+            print('Training the model using fold ', val_num)
             test_interval = index_set[:, val_num, :]
             accuracy_list, precision_list, recall_list, loss_list= train_test(data_list, test_interval, val_num, test_list, whitening,
                                        method, name_list, max_iters, 
@@ -310,9 +311,10 @@ if __name__ == '__main__':
     
     # test and produce the submission file
     if final_test:
+        print('Loading the test data...')
         test_file = './data/test.csv'
         test_data = np.genfromtxt(test_file, delimiter = ',', dtype = 'U')
-        
+        print('Loading finished')
         data = test_data[1:]
         ids = data[:, 0]
         N = len(ids)
@@ -320,19 +322,21 @@ if __name__ == '__main__':
         
         mask_999 = (features == -999.0)
 
+        print('Start predicting...')
         # collect prediction from each model
         prediction_set = []
         for val_num in range(k_fold):
-            M_list = np.load('./parameters/data_whitening/M_list_val' + str(val_num) + '.npy')
-            mean_list = np.load('./parameters/data_whitening/mean_list_val' + str(val_num) + '.npy')
+            print('Loading models trained from fold ', val_num)
+            M_list = np.load('./parameters/data_whitening/M_list_val' + str(val_num) + '.npy', allow_pickle = True)
+            mean_list = np.load('./parameters/data_whitening/mean_list_val' + str(val_num) + '.npy', allow_pickle = True)
             if method == 'dl':
-                W_collection = np.load('./parameters/neural_net/W_collection_dl_val' + str(val_num) + '.npy')
-                b_collection = np.load('./parameters/neural_net/b_collection_dl_val' + str(val_num) + '.npy')  
+                W_collection = np.load('./parameters/neural_net/W_collection_dl_val' + str(val_num) + '.npy', allow_pickle = True)
+                b_collection = np.load('./parameters/neural_net/b_collection_dl_val' + str(val_num) + '.npy', allow_pickle = True)  
             elif method == 'ls':
-                w_list = np.load('./parameters/ridge/w_' + method+ '_val' + str(val_num) + '.npy')
+                w_list = np.load('./parameters/ridge/w_' + method+ '_val' + str(val_num) + '.npy', allow_pickle = True)
             elif method == 'log':
-                w_list = np.load('./parameters/logistic/w_' + method+ '_val' + str(val_num) + '.npy')
-            
+                w_list = np.load('./parameters/logistic/w_' + method+ '_val' + str(val_num) + '.npy', allow_pickle = True)
+            print('Start predicting...')
             
             prediction = np.zeros(N, np.int8)
             for i in range(6):
@@ -362,7 +366,7 @@ if __name__ == '__main__':
                     y[y < 0] = -1
                 prediction[mask] = y
             prediction_set.append(prediction)
-            
+        
         # vote for the final prediction among all models
         prediction_set = np.array(prediction_set)
         pred_mask = np.sum(prediction_set, axis = 0) > 0
@@ -372,5 +376,7 @@ if __name__ == '__main__':
         submit = np.array([['Id', 'Prediction']])
         tem = np.stack((ids, final_prediction)).T
         submit = np.concatenate((submit, tem), axis = 0)
+        print('Final predictions made, save the submission file...')
         np.savetxt("submission.csv", submit, delimiter=",", fmt='%s')
+        print('Finished!')
         
