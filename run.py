@@ -261,7 +261,7 @@ if __name__ == '__main__':
 
    
     
-    train = True # only for debug on training
+    train = False # only for debug on training
 
     if train or train_validate:
         data_A = np.load('./train_data/data_A.npy', allow_pickle = True)
