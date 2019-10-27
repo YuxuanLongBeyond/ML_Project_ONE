@@ -28,12 +28,11 @@ def save_data(features, labels, mask, file_name):
     data = np.concatenate((features[mask, :], label), axis = 1)
     np.save(file_name, data)
 
-
-if __name__ == '__main__':
-    
+def processing():
+    print('Loading the training data...')
     train_file = './data/train.csv'
     train_data = np.genfromtxt(train_file, delimiter = ',', dtype = 'U')
-    
+    print('Separate the data into 6 types and save them...')
     data = train_data[1:]
     
     labels = data[:, 1]
@@ -69,7 +68,7 @@ if __name__ == '__main__':
     mask_D = np.all(~mask_999, axis = 1) # 68114 ~ 31894
     D_num = np.sum(mask_D)
     
-    print(A_num + B_num + C_num + AB_num + AC_num + BC_num + ABC_num + D_num)
+#    print(A_num + B_num + C_num + AB_num + AC_num + BC_num + ABC_num + D_num)
     # There are two types that do not exist
     # In summary, 6 types of feature
     
@@ -83,3 +82,8 @@ if __name__ == '__main__':
     save_data(features, labels, mask_ABC, './train_data/data_ABC')
     save_data(features, labels, mask_D, './train_data/data_D')
 
+
+    
+if __name__ == '__main__':
+    processing()
+ 

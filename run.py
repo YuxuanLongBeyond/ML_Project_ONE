@@ -6,6 +6,7 @@ Created on Fri Sep 27 23:48:20 2019
 @author: YuxuanLong
 """
 import numpy as np
+import os
 import implementations as imp
 import feature_processing as feat
 import fast_simple_net as sim
@@ -103,7 +104,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
     recall_list = []
     # iterate through all data types, train and test each model on a specific method
     for i in range(len(name_list)):
-        
+        print('Training for data ', name_list[i])
         x, y, dim = extract_train_data(test_list[i], data_list[i])
         
         # only use some part of data for training, rest is for testing
@@ -130,7 +131,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
         
         x_tr = build_poly(x_tr)
         x_tst = build_poly(x_tst)
-        print(x_tr.shape[1])
+        print('Length of data point: ', x_tr.shape[1])
           
         if method == 'ls':
             # least squares / ridge regression
@@ -170,7 +171,7 @@ def train_test(data_list, test_interval, val_num, test_list, whitening = True,
             raise ValueError
         loss_list.append(loss)
         
-        print('For training data ', name_list[i], ', the average accuracy is: ', accuracy, '\n')
+        print('For data ', name_list[i], ', the average accuracy is: ', accuracy, '\n')
     
     # Save all parameters
     if whitening:
@@ -219,7 +220,10 @@ if __name__ == '__main__':
     num_epoch = 300 # 300
     out_dim = 2 # 2 n (binary classifier)
     
-    
+    print('Check if processed train data is already generated')
+    if len(os.listdir('./train_data')) < 6:
+        print('Training data will be pruned and separated...')
+        feat.processing()
     
     
     if method == 'ls':
@@ -257,7 +261,7 @@ if __name__ == '__main__':
 
    
     
-    train = False
+    train = False # only for debug on training
 
     if train or train_validate:
         data_A = np.load('./train_data/data_A.npy', allow_pickle = True)
@@ -307,6 +311,7 @@ if __name__ == '__main__':
             accu[i] = (validate_set[i,0] * A_num + validate_set[i,1] * B_num + validate_set[i,2] * AB_num + validate_set[i,3] * BC_num + validate_set[i,4] * ABC_num + validate_set[i,5] * D_num)/250000
             accuracy_storage.append(accu[i])
         accuracy_storage.append(np.sum(accu)/k_fold)
+        print('Weighted average accuracy: ')
         print(accuracy_storage)    
     
     # test and produce the submission file
